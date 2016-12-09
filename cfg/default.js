@@ -15,7 +15,7 @@ let pagePath = path.join(__dirname, '/../src/page');
 let componentPath = __dirname + '/../src/lib/components';
 let imagePath = __dirname + '/../src/static/images';
 let frameWorkPath = __dirname +'/../src/lib/framework';
-let publicPath = '/public/assets/';
+let publicPath = '/assets/';
 
 /**
  * Get the default modules object for webpack

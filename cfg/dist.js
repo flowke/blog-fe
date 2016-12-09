@@ -11,6 +11,10 @@ let defaultSettings = require('./default');
 // Add needed plugins here
 let BowerWebpackPlugin = require('bower-webpack-plugin');
 process.env.NODE_ENV = 'production';
+
+let extractCSS = new ExtractTextPlugin('[name]_[contenthash].css');
+let extractSCSS = new ExtractTextPlugin('[name]_[contenthash].css');
+
 let config = Object.assign({}, baseConfig, {
     entry: {
           index: defaultSettings.pagePath + '/index/index.js'
@@ -24,7 +28,7 @@ let config = Object.assign({}, baseConfig, {
         }),
         new htmlWebpackPlugin({
             template: defaultSettings.pagePath + '/index/index.html',
-            filename: '../../index.html',
+            filename: '../index.html',
             inject: true, //Inject all scripts into the body
             hash: false,
             chunks: ['index']
@@ -35,7 +39,8 @@ let config = Object.assign({}, baseConfig, {
             minChunks: Infinity // 提取至少*个模块共有的部分
         }), */
 
-        new ExtractTextPlugin('[contenthash].css'), //单独使用link标签加载css并设置路径，相对于output配置中的 publickPath
+        extractCSS, //单独使用link标签加载css并设置路径，相对于output配置中的 publickPath
+        extractSCSS,
         new webpack.optimize.DedupePlugin(),
         new webpack.DefinePlugin({
             'process.env.NODE_ENV': '"production"'
@@ -68,7 +73,7 @@ let config = Object.assign({}, baseConfig, {
 config.module.loaders.push(
     {
       test: /\.css$/,
-        loader: ExtractTextPlugin.extract('css-loader')
+        loader: extractCSS.extract('css-loader')
     },
     {
         test: /\.(js|jsx)$/,
@@ -80,12 +85,12 @@ config.module.loaders.push(
     },
     {
         test: /\.scss/,
-        loader: ExtractTextPlugin.extract('css-loader?modules&localIdentName=[local]_[hash:base64:10]!postcss-loader!sass-loader?outputStyle=compressed'),
+        loader: extractSCSS.extract('css-loader?modules&localIdentName=[local]_[hash:base64:10]!postcss-loader!sass-loader?outputStyle=compressed'),
         exclude: path.resolve(__dirname, '../src/static')
     },
     {
         test: /\.scss/,
-        loader: ExtractTextPlugin.extract('css-loader!postcss-loader!sass-loader?outputStyle=compressed'),
+        loader: extractSCSS.extract('css-loader!postcss-loader!sass-loader?outputStyle=compressed'),
         include: path.resolve(__dirname, '../src/static')
     }
 );

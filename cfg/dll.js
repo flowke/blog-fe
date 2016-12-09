@@ -6,7 +6,7 @@ const path = require('path');
 
 module.exports = {
     output: {
-        path: path.join(__dirname, '/../dist/public/assets'),
+        path: path.join(__dirname, '/../dist/assets'),
         filename: '[name].js',
         library: '[name]' // 当前Dll的所有内容都会存放在这个参数指定变量名的一个全局变量下，注意与DllPlugin的name参数保持一致
     },

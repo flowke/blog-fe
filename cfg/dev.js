@@ -25,7 +25,7 @@ let config = Object.assign({}, baseConfig, {
         new ExtractTextPlugin('[name].css'),
         new htmlWebpackPlugin({
             template: defaultSettings.pagePath + '/index/index.html',
-            filename: '../../index.html',
+            filename: '../index.html',
             inject: true, //Inject all scripts into the body
             hash: false,
             chunks: ['index']
@@ -62,7 +62,7 @@ config.module.loaders.push(
         loader: 'babel-loader',
         include: [].concat(
             config.additionalPaths,
-            [ path.join(__dirname, '/../src') ]
+            [ path.join(__dirname, '/../src'), path.join(__dirname,'/../framework/util') ]
         )
     },
     {

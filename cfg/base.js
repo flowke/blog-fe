@@ -21,7 +21,7 @@ module.exports = {
     debug: true,
     devtool: 'eval',
     output: {
-        path: path.join(__dirname, '/../dist/public/assets'), //你想把打包文件放在哪个地方
+        path: path.join(__dirname, '/../dist/assets'), //你想把打包文件放在哪个地方
         filename: '[name].js',
         publicPath: defaultSettings.publicPath
         // publicPath: 'http://127.0.0.1:8080/'

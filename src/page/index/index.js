@@ -11,39 +11,33 @@ let navProps = {
     brandUrl: './img/curly-brackets.png'
 }
 
-let infoData = [{
-    id: '1',
-    title: '非豆科绿肥',
-    user: 'flowke',
-    time: 'fdlkfslk',
-    read: 30,
-    comment: 89,
-    like: 77,
-}];
 
-for(let i=0; i<40; i++){
-    infoData.push(infoData[0]);
-}
+
+
 
 class Index extends React.Component{
-
     constructor(props){
         super(props);
         this.state = {
-            infoType: 'inbox',
-            infoData: infoData
+            infoPanel: 'userEntry'
         }
+
+        this.changeInfoPanel = this.changeInfoPanel.bind(this);
+
+
+    }
+
+    changeInfoPanel(token){
     }
 
     render(){
 
-        let { infoType, infoData } = this.state;
-
+        let { infoPanel } = this.state;
         return(
             <div className={style.wrap}>
                 <Nav {...navProps}/>
                 <div className={`container-fluid ${style.bd}`}>
-                    <Info token={infoType} data={infoData}/>
+                    <Info token={infoPanel} />
                 </div>
             </div>
         );

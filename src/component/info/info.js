@@ -1,24 +1,87 @@
 // 此组件是容器组件
+import config from 'config/config.json';
 import Inbox from 'component/inbox/inbox.js';
+import UserEntry from 'component/userEntry/userEntry.js';
+
+let infoData = [{
+    id: '1',
+    title: '非豆科绿肥',
+    user: 'flowke',
+    time: 'fdlkfslk',
+    read: 30,
+    comment: 89,
+    like: 77
+}];
+for(let i=0; i<40; i++){
+    infoData.push(infoData[0]);
+}
 import style from './info.scss';
-export default ( {token, data} )=>{
+export default class Info extends React.Component{
 
-    let component = null;
-    let tit = '';
-    switch(token){
-        case 'inbox':
-            component = data.map( (elt,indx)=>( <Inbox key={indx} data={elt}/>) );
-            tit = 'Inbox';
-            break;
+    constructor(props){
+        super(props);
+        this.state = {
+            inboxData: infoData,
+            entryData: {
+                isLogin: false
+            }
+        };
+
+        this.changeUserEntry = this.changeUserEntry.bind(this);
+        this.handleLogin = this.handleLogin.bind(this);
+        this.handleSignin = this.handleSignin.bind(this);
     }
-    return (
-        <section className={`col-lg-4 ${style.section}`}>
-            <header className={`${style.header}`}><h2 className={`page-header`}>{tit}</h2></header>
-            <div className={`${style.wrap}`}>
-                {component}
-            </div>
+    // 登陆还是注册
+    changeUserEntry(token){
+        let {entryData} = this.state;
+        entryData.isLogin = token;
+        this.setState({entryData});
+    }
 
-        </section>
-    );
+    handleLogin(data){
+        $.post({
+            url: `${config.url}/home/user/login`,
+            context: this,
+			data: data,
+			dataType: 'json'
+        })
+        .done( (data)=>{
+            congole.log(data);
+        } );
+    }
+    handleSignin(data){
+        console.log(data)
+    }
+
+    render(){
+        let { token } = this.props;
+        let {inboxData, entryData} = this.state;
+        let component = null;
+        let tit = '';
+        switch(token){
+            case 'inbox':
+                component = inboxData.map( (elt,indx)=>( <Inbox key={indx} data={elt}/>) );
+                tit = 'Inbox';
+                break;
+            case 'userEntry':
+                component = (
+                    <UserEntry
+                        isLogin={entryData.isLogin}
+                        changePanel={this.changeUserEntry}
+                        handleLogin={this.handleLogin}
+                        handleSignin={this.handleSignin}
+                    />);
+                tit = entryData.isLogin ? '登陆': '注册';
+        };
+        return (
+            <section className={`col-lg-4 ${style.section}`}>
+                <header className={`${style.header}`}><h2 className={`page-header`}>{tit}</h2></header>
+                <div className={`${style.wrap}`}>
+                    {component}
+                </div>
+            </section>
+        );
+    }
+
 
 }
