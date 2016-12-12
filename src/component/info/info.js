@@ -23,13 +23,11 @@ export default class Info extends React.Component{
         this.state = {
             inboxData: infoData,
             entryData: {
-                isLogin: false
+                isLogin: true
             }
         };
 
         this.changeUserEntry = this.changeUserEntry.bind(this);
-        this.handleLogin = this.handleLogin.bind(this);
-        this.handleSignin = this.handleSignin.bind(this);
     }
     // 登陆还是注册
     changeUserEntry(token){
@@ -38,27 +36,15 @@ export default class Info extends React.Component{
         this.setState({entryData});
     }
 
-    handleLogin(data){
-        $.post({
-            url: `${config.url}/home/user/login`,
-            context: this,
-			data: data,
-			dataType: 'json'
-        })
-        .done( (data)=>{
-            congole.log(data);
-        } );
-    }
-    handleSignin(data){
-        console.log(data)
-    }
 
     render(){
-        let { token } = this.props;
+        let { whichPanel, changeLoginState, changeInfoPanel, handleUserLogin } = this.props;
         let {inboxData, entryData} = this.state;
         let component = null;
         let tit = '';
-        switch(token){
+        switch(whichPanel){
+            case 'home':
+                break;
             case 'inbox':
                 component = inboxData.map( (elt,indx)=>( <Inbox key={indx} data={elt}/>) );
                 tit = 'Inbox';
@@ -68,8 +54,9 @@ export default class Info extends React.Component{
                     <UserEntry
                         isLogin={entryData.isLogin}
                         changePanel={this.changeUserEntry}
-                        handleLogin={this.handleLogin}
-                        handleSignin={this.handleSignin}
+                        changeLoginState={changeLoginState}
+                        changeInfoPanel={changeInfoPanel}
+                        handleUserLogin={handleUserLogin}
                     />);
                 tit = entryData.isLogin ? '登陆': '注册';
         };

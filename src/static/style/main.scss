@@ -1,3 +1,10 @@
 
 body, html{ height: 100%; overflow: hidden; }
 #root{height: 100%;}
+/* fix bootstrap */
+.tooltip{ white-space:nowrap;  }
+.navbar-default .navbar-brand:hover {
+    color: initial;
+    background-color: initial;
+}
+/* end fix bootstrap */

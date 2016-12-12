@@ -1,22 +1,31 @@
-import Validator from 'util/validation.js'
+import Validator from 'util/validation.js';
+import config from 'config/config.json';
 import style from './userEntry.scss';
+
+let initState = {
+    hintState: {
+        username: '',
+        passw: '',
+        cfpassw: ''
+    },
+    value: {
+        username: '',
+        passw: '',
+        cfpassw:''
+    },
+    wrongMsg : {
+        username: false,
+        passw: false,
+        cfpassw: false
+    }
+};
 
 export default class UserEntry extends React.Component{
 
     constructor(props){
         super(props);
 
-        this.state = {
-            forUser: '',
-            forPwssw: '',
-            forCfpwssw: '',
-            userVal:'',
-            passwVal:'',
-            cfpasswVal:'',
-            canSubmit: false
-        };
-
-        this.canSubmit = [false,false,false];
+        this.state = Object.assign({},initState);
 
         this.validator = new Validator();
 
@@ -32,104 +41,136 @@ export default class UserEntry extends React.Component{
         ev.preventDefault();
 
         this.setState({
-            forUser: '',
-            forPwssw: '',
-            forCfpwssw: '',
-            userVal:'',
-            passwVal:'',
-            cfpasswVal:'',
-            canSubmit: true
+            hintState: {
+                username: '',
+                passw: '',
+                cfpassw: ''
+            },
+            value: {
+                username: '',
+                passw: '',
+                cfpassw:''
+            },
+            wrongMsg : {
+                username: false,
+                passw: false,
+                cfpassw: false
+            }
         });
         this.props.changePanel(token);
-
     }
 
     handleSubmit(ev){
         ev.stopPropagation();
         ev.preventDefault();
-        let {isLogin, handleLogin, handleSignin} = this.props;
-        let {userVal, passwVal, cfpasswVal} = this.state;
-        if(this.state.canSubmit){
-            isLogin? handleLogin({userVal, passwVal})
-            : handleSignin({userVal, passwVal, cfpasswVal});
+        let {isLogin, handleUserLogin} = this.props;
+        let {username, passw, cfpassw} = this.state.value;
+        let wrongMsg = {},
+            hintState = {};
+        let canSubmit = true;
+
+        this.validator.valiByValue({
+            username,
+            passw
+        },(name,msg)=>{
+            wrongMsg[name] = msg;
+            hintState[name] = 'has-error';
+            canSubmit = false;
+        });
+
+        if(!isLogin && (passw !== cfpassw) ){
+            wrongMsg.cfpassw = "密码不一致";
+            hintState.cfpassw = 'has-error';
+            canSubmit = false;
+        }
+
+        this.setState({
+            wrongMsg,
+            hintState
+        })
+
+        if( canSubmit){
+            handleUserLogin(isLogin, {username, passw, cfpassw},({code,msg})=>{
+                if(isLogin){
+                    if(code===1){
+                        wrongMsg.username = msg;
+                        hintState.username = 'has-error';
+                    }else if(code===2){
+                        wrongMsg.passw = msg;
+                        hintState.passw = 'has-error';
+                    }
+                    if(code !== 0){
+                        this.setState({wrongMsg, hintState});
+                    }
+                }else{
+                    if(code === 1){
+                        wrongMsg.username = "用户名已存在";
+                        hintState.username = 'has-error';
+                    }else if(code===0){
+                        this.props.changePanel(true);
+                    }
+                    this.setState({wrongMsg, hintState});
+                }
+            })
         }
     }
 
-    //提交前的前端验证
+    //提交前的前端验证提示
     validValue(token, ev){
-        let {userVal, passwVal, cfpasswVal} = this.state;
-        let boolArr = this.canSubmit;
-        let msg = '';
-        switch(token){
-            case 'username':
-                userVal = ev.target.value;
-                this.setState({userVal})
-                msg = this.validator.valiOneByValue('username', userVal);
-                if(msg){
-                    this.setState({forUser: 'has-error'});
-                    boolArr[0] = false;
-                }else{
-                    this.setState({forUser: 'has-success'});
-                    boolArr[0] = true;
-                }
-                break;
-            case 'passw':
-                passwVal = ev.target.value;
-                this.setState({passwVal});
-                msg = this.validator.valiOneByValue('passw',passwVal);
-                if(msg){
-                    this.setState({forPwssw: 'has-error'});
-                    boolArr[1] = false;
-                }else{
-                    this.setState({forPwssw: 'has-success'});
-                    boolArr[1] = true;
-                }
-                break;
-            case 'cfpassw':
-                cfpasswVal = ev.target.value;
-                this.setState({cfpasswVal});
-                if(cfpasswVal !== passwVal){
-                    this.setState({forCfpwssw: 'has-error'});
-                    boolArr[2] = false;
-                }else{
-                    this.setState({forCfpwssw: 'has-success'});
-                    boolArr[2] = true;
-                }
+        let {value, hintState, wrongMsg} = this.state;
+        let {isLogin} = this.props;
+
+        let curtVal = value[token] = ev.target.value;
+        wrongMsg[token] = '';
+        hintState[token] = '';
+        if(token !== 'cfpassw'){
+
+            this.validator.valiOneByValue(token, curtVal,(msg)=>{
+                hintState[token] = 'has-error';
+                wrongMsg[token] = msg;
+            });
         }
-        this.setState({
-            canSubmit: boolArr.every(elt=>elt)
-        });
+
+        this.setState({hintState,wrongMsg});
     }
 
     componentDidMount(){
+
+        let {isLogin} = this.props;
+
         this.validator.addByValue('username',[
             {strategy: 'isEmpty', errorMsg:'用户名不能为空'},
             {strategy: 'hasSpace', errorMsg:'不能有空格'},
-            {strategy: 'isNumberHead', errorMsg:'不能数字开头'}
+            {strategy: 'isNumberHead', errorMsg:'不能数字开头'},
+            {strategy: 'mustAllW', errorMsg:'用户名只能由字母,数字,下划线( _ )组成'},
+            {strategy: 'maxLength:16', errorMsg:'不能超过12位'}
         ]);
         this.validator.addByValue('passw',[
-            {strategy: 'isEmpty', errorMsg:'用户名不能为空'},
+            {strategy: 'isEmpty', errorMsg:'密码不能为空'},
             {strategy: 'hasSpace', errorMsg:'不能有空格'},
         ]);
     }
 
     render(){
         let { isLogin, handleLogin } = this.props;
-        let {forUser, forPwssw, forCfpwssw, userVal, passwVal, cfpasswVal} = this.state;
-        let cfPassw = null;
+        let {hintState, value, wrongMsg} = this.state;
+        let cfPasswComponent = null;
         if(!isLogin){
-            cfPassw = (
-                <div className={`form-group ${forCfpwssw}`}>
+            cfPasswComponent = (
+                <div className={`form-group ${hintState.cfpassw}`}>
                     <div className="input-group input-group-lg">
                         <div className="input-group-addon">
                             <span className='glyphicon glyphicon-lock'></span>
                         </div>
                         <input
-                            type="password" onChange={this.validValue.bind(this,'cfpassw')} className={`form-control`} name="cfPassw"
+                            type="password"
+                            onChange={this.validValue.bind(this,'cfpassw')}
+                            className={`form-control`} name="cfPassw"
                             placeholder="Confirm password"
-                            value={cfpasswVal}
+                            value={value.cfpassw}
                         />
                     </div>
+                    {wrongMsg.cfpassw?<span className="help-block">{wrongMsg.cfpassw}</span>:""}
                 </div>
             );
         };
@@ -141,7 +182,7 @@ export default class UserEntry extends React.Component{
                 </header>
                 <div>
                     <form className={style.form} onSubmit={this.handleSubmit} role="form">
-                        <div className={`form-group ${forUser}`}>
+                        <div className={`form-group ${hintState.username}`}>
                             <div className="input-group input-group-lg">
                                 <div className="input-group-addon">
                                     <span className='glyphicon glyphicon-user'></span>
@@ -152,25 +193,28 @@ export default class UserEntry extends React.Component{
                                     id="username"
                                     name="username"
                                     placeholder="username"
-                                    value = {userVal}
+                                    value = {value.username}
                                 />
                             </div>
+                            {wrongMsg.username?<span className="help-block">{wrongMsg.username}</span>:""}
                         </div>
-                        <div className={`form-group ${forPwssw}`}>
+                        <div className={`form-group ${hintState.passw}`}>
                             <div className="input-group input-group-lg">
                                 <div className="input-group-addon">
                                     <span className='glyphicon glyphicon-lock'></span>
                                 </div>
                                 <input
                                     type="password"
-                                    onChange={this.validValue.bind(this,'passw')} className={`form-control`}
+                                    onChange={this.validValue.bind(this,'passw')}
+                                    className={`form-control`}
                                     placeholder="password"
                                     name="passw"
-                                    value={passwVal}
+                                    value={value.passw}
                                 />
                             </div>
+                            {wrongMsg.passw?<span className="help-block">{wrongMsg. passw}</span>:""}
                         </div>
-                        {cfPassw}
+                        {cfPasswComponent}
                         <div className="form-group">
                             <button
                                 type="submit"

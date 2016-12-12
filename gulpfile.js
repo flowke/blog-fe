@@ -1,6 +1,7 @@
 const gulp = require('gulp'),
     clean = require('gulp-clean'),
     sequence = require('gulp-sequence');
+const bs = require('browser-sync').create();
 
 gulp.task('move',['clean'],function(){
     return gulp.src(['src/static/image/*','./framework/vendor/**','src/static/fonts/*','./src/static/style/*.css'])
@@ -39,3 +40,12 @@ gulp.task('toDist', ['cleanAssets'], ()=>{
 gulp.task('watch',() => {
     gulp.watch('dist/**',['toDist']);
 });
+
+gulp.task('bs', ()=>{
+    bs.init({
+        files:["**"],
+        proxy: 'blog.com:9000',
+        port: 4000,
+        tunnel: true
+    })
+})

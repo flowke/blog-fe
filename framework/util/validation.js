@@ -41,6 +41,11 @@ let formValidation = {
             return errorMsg;
         }
     },
+    mustAllW: (val,errorMsg)=>{
+        if(/\W/g.test(val)){
+            return errorMsg;
+        }
+    },
     isPhoneNum: function(val, errorMsg){
         if(!/^1[34578][0-9]{9}$/.test(val)){
             return errorMsg;
@@ -159,11 +164,12 @@ export default class Validator{
             }
         }
     }
-    valiOneByValue(name,value){
+    valiOneByValue(name,value,cb=()=>{}){
         for(var i=0, fn; fn = this.valueRuleCache[name][i++];){
             var msg = fn(value);
             if( msg ){
-                return msg;
+                cb(msg);
+                return msg ;
             }
         }
     }
@@ -174,14 +180,21 @@ export default class Validator{
     因为是遍历所有绑定到dom上的验证规则,也就不需要传入name了
     */
     valiAllByDom(){
-        for(var name in this.ruleCache){
-            this.valiOneByDom(name);
+        let msg;
+        for(var name in this.domRuleCache){
+            if( msg = this.valiOneByDom(name) ){
+                return msg;
+            }
         }
     }
 
-    alertTool(msg){
-        if(msg){
-            return mag;
+    valiByValue(data={},cb=function(){}){
+        let msg;
+        for(let name in data){
+            if( msg = this.valiOneByValue(name, data[name] )){
+
+                cb(name,msg);
+            };
         }
     }
 }

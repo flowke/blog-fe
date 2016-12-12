@@ -38,10 +38,10 @@ let config = Object.assign({}, baseConfig, {
             includes:           /.*/,
             excludes:           /.*\.less/,
             searchResolveModulesDirectories: false
-        }),
-        new openBrowserWebpackPlugin({
-            url: 'http://127.0.0.1:8000/index.html'
         })
+/*         new openBrowserWebpackPlugin({
+            url: 'http://127.0.0.1:8000/index.html'
+        }) */
     ],
     externals: {
         "window" : 'window',
